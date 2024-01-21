@@ -13,7 +13,7 @@ public enum CopyTradingType
     Both,
 
     [EnumMember(Value = "utaOnly")]
-    UfaOnly,
+    UtaOnly,
 
     [EnumMember(Value = "normalOnly")]
     NormalOnly,
