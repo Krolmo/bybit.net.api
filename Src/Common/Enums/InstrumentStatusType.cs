@@ -2,7 +2,7 @@
 
 public enum InstrumentStatusType
 {
-    Undefined, // indicates parsing error
+    Unknown, // indicates parsing error
     PreLaunch,
     Trading,
     Settling,

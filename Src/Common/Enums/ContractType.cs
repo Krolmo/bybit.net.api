@@ -2,7 +2,7 @@
 
 public enum ContractType
 {
-    Undefined, // indicates parsing error
+    Unknown, // indicates parsing error
     InversePerpetual,
     LinearPerpetual,
     LinearFutures,

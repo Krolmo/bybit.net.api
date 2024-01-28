@@ -202,8 +202,9 @@ namespace bybit.net.api.ApiServiceImp
         /// <param name="slOrderType"></param>
         /// <returns>None</returns>
         public async Task<string?> SetPositionTradingStop(Category category, string symbol, PositionIndex positionIndex, string? takeProfit = null,
-        string? stopLoss = null, TriggerBy? tpTriggerBy = null, TriggerBy? slTriggerBy = null, string? trailingStop = null, TpslMode? tpslMode = null,
-                                                string? tpSize = null, string? slSize = null, string? tpLimitPrice = null, string? slLimitPrice = null, OrderType? tpOrderType = null, OrderType? slOrderType = null)
+            string? stopLoss = null, TriggerBy? tpTriggerBy = null, TriggerBy? slTriggerBy = null, string? trailingStop = null, TpslMode? tpslMode = null,
+            string? tpSize = null, string? slSize = null, string? tpLimitPrice = null, string? slLimitPrice = null, 
+            bybit.net.api.Models.Trade.OrderType? tpOrderType = null, bybit.net.api.Models.Trade.OrderType? slOrderType = null)
         {
             var query = new Dictionary<string, object> { { "category", category.Value }, { "symbol", symbol }, { "positionIndex", positionIndex.Value } };
 

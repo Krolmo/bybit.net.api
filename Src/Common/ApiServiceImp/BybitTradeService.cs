@@ -59,10 +59,10 @@ namespace bybit.net.api.ApiServiceImp
         /// <param name="tpOrderType"></param>
         /// <param name="slOrderType"></param>
         /// <returns>Order result</returns>
-        public async Task<string?> PlaceOrder(Category category, string symbol, Side side, OrderType orderType, string qty, string? price = null, TimeInForce? timeInForce = null, int? isLeverage = null, int? triggerDirection = null,
+        public async Task<string?> PlaceOrder(Category category, string symbol, Side side, bybit.net.api.Models.Trade.OrderType orderType, string qty, string? price = null, TimeInForce? timeInForce = null, int? isLeverage = null, int? triggerDirection = null,
                                                 string? orderFilter = null, string? triggerPrice = null, TriggerBy? triggerBy = null, string? orderIv = null, int? positionIdx = null, string? orderLinkId = null, string? takeProfit = null,
-                                                string? stopLoss = null, TriggerBy? tpTriggerBy = null, TriggerBy? slTriggerBy = null, bool? reduceOnly = null, bool? closeOnTrigger = null, SmpType? smpType = null, bool? mmp = null, TpslMode? tpslMode = null,
-                                                string? tpLimitPrice = null, string? slLimitPrice = null, OrderType? tpOrderType = null, OrderType? slOrderType = null)
+                                                string? stopLoss = null, TriggerBy? tpTriggerBy = null, TriggerBy? slTriggerBy = null, bool? reduceOnly = null, bool? closeOnTrigger = null, bybit.net.api.Models.Trade.SmpType? smpType = null, bool? mmp = null, TpslMode? tpslMode = null,
+                                                string? tpLimitPrice = null, string? slLimitPrice = null, bybit.net.api.Models.Trade.OrderType? tpOrderType = null, bybit.net.api.Models.Trade.OrderType? slOrderType = null)
         {
             var query = new Dictionary<string, object>
                         {
@@ -376,7 +376,8 @@ namespace bybit.net.api.ApiServiceImp
         /// <param name="orderFilter"></param>
         /// <param name="stopOrderType"></param>
         /// <returns>Orders result</returns>
-        public async Task<string?> CancelAllOrder(Category category, string? symbol = null, string? baseCoin = null, string? settleCoin = null, string? orderFilter = null, StopOrderType? stopOrderType = null)
+        public async Task<string?> CancelAllOrder(Category category, string? symbol = null, string? baseCoin = null,
+            string? settleCoin = null, string? orderFilter = null, bybit.net.api.Models.Trade.StopOrderType? stopOrderType = null)
         {
             var query = new Dictionary<string, object>
                         {

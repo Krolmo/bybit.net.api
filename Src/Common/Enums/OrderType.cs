@@ -1,8 +1,8 @@
 ﻿namespace bybit.net.api;
 
-public enum SideType
+public enum OrderType
 {
     Unknown,
-    Buy,
-    Sell
+    Limit,
+    Market,
 }

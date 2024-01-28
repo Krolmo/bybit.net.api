@@ -4,7 +4,7 @@ namespace bybit.net.api;
 
 public enum CopyTradingType
 {
-    Undefined, // indicates parsing error
+    Unknown, // indicates parsing error
 
     [EnumMember(Value = "none")]
     None,
