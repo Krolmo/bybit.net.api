@@ -2,6 +2,7 @@
 
 public enum StopOrderType
 {
+    Unknown,
     TakeProfit,
     StopLoss,
     TrailingStop,

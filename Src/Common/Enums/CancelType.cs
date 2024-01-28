@@ -2,6 +2,7 @@
 
 public enum CancelType
 {
+    Unknown,
     CancelByUser,
     CancelByReduceOnly,
     CancelByPrepareLiq,

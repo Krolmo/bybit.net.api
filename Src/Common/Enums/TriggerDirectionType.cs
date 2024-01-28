@@ -2,7 +2,7 @@
 
 public enum TriggerDirectionType : byte
 {
-    Unknkown = 0,
+    Unknown = 0,
     Rise = 1,
     Fall = 2,
 }

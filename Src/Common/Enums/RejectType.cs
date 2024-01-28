@@ -3,6 +3,7 @@ namespace bybit.net.api;
 
 public enum RejectType
 {
+    Unknown,
     EC_NoError,
     EC_Others,
     EC_UnknownMessageType,

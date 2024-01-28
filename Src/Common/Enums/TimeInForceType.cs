@@ -4,7 +4,7 @@ namespace bybit.net.api;
 public enum TimeInForceType
 {
     GTC,
-    IOK,
+    IOC,
     FOK,
     PostOnly
 }

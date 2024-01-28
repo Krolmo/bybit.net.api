@@ -2,6 +2,7 @@
 
 public enum CreateType
 {
+    Unknown,
     CreateByUser,
     CreateByAdminClosing,
     CreateByStopOrder,

@@ -26,7 +26,7 @@ public class OrderInfo
     public SideType Side { get; set; }
 
     [JsonProperty("isLeverage")]
-    public BitType IsLeverage { get; set; }
+    public BitType? IsLeverage { get; set; }
 
     [JsonProperty("positionIdx")]
     public PositionIdxType PositionIdx { get; set; }
