@@ -13,7 +13,9 @@ namespace bybit.net.api.Websockets
     {
         private readonly IBybitWebSocketHandler handler;
         private readonly List<Func<string, Task>> onMessageReceivedFunctions;
+        private readonly List<Func<Exception, Task>> onErrorFunctions;
         private readonly List<CancellationTokenRegistration> onMessageReceivedCancellationTokenRegistrations;
+        private readonly List<CancellationTokenRegistration> onErrorCancellationTokenRegistrations;
         private CancellationTokenSource? loopCancellationTokenSource;
         private readonly string url;
         private readonly int pingInterval;
@@ -35,6 +37,8 @@ namespace bybit.net.api.Websockets
             this.maxAliveTime = maxAliveTime;
             this.onMessageReceivedFunctions = new List<Func<string, Task>>();
             this.onMessageReceivedCancellationTokenRegistrations = new List<CancellationTokenRegistration>();
+            this.onErrorFunctions = new List<Func<Exception, Task>>();
+            this.onErrorCancellationTokenRegistrations = new List<CancellationTokenRegistration>();
         }
 
         #region Websocket Public Methods
@@ -105,6 +109,24 @@ namespace bybit.net.api.Websockets
                 this.onMessageReceivedCancellationTokenRegistrations.Add(reg);
             }
         }
+        
+        /// <summary>
+        /// Registers a callback function to be invoked when an error happens in Websocket
+        /// </summary>
+        /// <param name="onError">Callback function to handle the received message.</param>
+        /// <param name="cancellationToken">Token to signal the callback registration to cancel.</param>
+        public void OnError(Func<Exception, Task> onError, CancellationToken cancellationToken)
+        {
+            this.onErrorFunctions.Add(onError);
+
+            if (cancellationToken != CancellationToken.None)
+            {
+                var reg = cancellationToken.Register(() =>
+                    this.onErrorFunctions.Remove(onError));
+
+                this.onErrorCancellationTokenRegistrations.Add(reg);
+            }
+        }
 
         /// <summary>
         /// Sends a message to the WebSocket.
@@ -129,6 +151,8 @@ namespace bybit.net.api.Websockets
             this.handler.Dispose();
 
             this.onMessageReceivedCancellationTokenRegistrations.ForEach(ct => ct.Dispose());
+            
+            this.onErrorCancellationTokenRegistrations.ForEach(ct => ct.Dispose());
 
             if (loopCancellationTokenSource != null) this.loopCancellationTokenSource.Dispose();
         }
@@ -218,7 +242,11 @@ namespace bybit.net.api.Websockets
             BybitParametersUtils.EnsureNoDuplicates(args);
             var subMessage = new { req_id = Guid.NewGuid().ToString(), op = "subscribe", args = args };
             string subMessageJson = JsonConvert.SerializeObject(subMessage);
-            await Console.Out.WriteLineAsync($"send subscription {subMessageJson}");
+            if (debugMode)
+            {
+                await Console.Out.WriteLineAsync($"send subscription {subMessageJson}");
+            }
+
             await SendAsync(subMessageJson, CancellationToken.None);
         }
 
@@ -234,8 +262,22 @@ namespace bybit.net.api.Websockets
                 await Task.Delay(TimeSpan.FromSeconds(this.pingInterval), token);
                 if (this.handler.State == WebSocketState.Open)
                 {
-                    await SendAsync("{\"op\":\"ping\"}", CancellationToken.None);
-                    await Console.Out.WriteLineAsync("ping sent");
+                    try
+                    {
+                        await SendAsync("{\"op\":\"ping\"}", CancellationToken.None);
+                        if (debugMode)
+                        {
+                            await Console.Out.WriteLineAsync("ping sent");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        onErrorFunctions.ForEach(of => of(new WebSocketException("WebSocket ping exception.")));
+                    }
+                }
+                else
+                {
+                    onErrorFunctions.ForEach(of => of(new WebSocketException("WebSocket connection closed.")));
                 }
             }
         }
@@ -258,16 +300,20 @@ namespace bybit.net.api.Websockets
 
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
-                        break;
+                        throw new WebSocketException("WebSocket connection closed.");
                     }
 
                     string content = Encoding.UTF8.GetString(buffer.ToArray(), buffer.Offset, buffer.Count);
                     this.onMessageReceivedFunctions.ForEach(omrf => omrf(content));
                 }
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
                 await this.DisconnectAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                onErrorFunctions.ForEach(of => of(ex));
             }
         }
         #endregion
