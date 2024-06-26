@@ -1,7 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Diagnostics;
-using System.IO;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,6 +10,7 @@ namespace bybit.net.api.Websockets
     {
         private readonly IBybitWebSocketHandler handler;
         private readonly List<Func<string, Task>> onMessageReceivedFunctions;
+        private readonly object onMessageReceivedLock = new();
         private readonly List<Func<Exception, Task>> onErrorFunctions;
         private readonly List<CancellationTokenRegistration> onMessageReceivedCancellationTokenRegistrations;
         private readonly List<CancellationTokenRegistration> onErrorCancellationTokenRegistrations;
@@ -42,7 +40,7 @@ namespace bybit.net.api.Websockets
         }
 
         #region Websocket Public Methods
-        // <summary>
+        /// <summary>
         /// Establishes a connection to the WebSocket. If required, sends an authentication and subscription request.
         /// </summary>
         /// <param name="args">Arguments for the subscription request.</param>
@@ -72,7 +70,7 @@ namespace bybit.net.api.Websockets
                     await SendAuth(apiKey, apiSecret);
                 }
                 await SendSubscription(args);
-                await Task.Factory.StartNew(() => this.ReceiveLoop(this.loopCancellationTokenSource.Token, this.receiveBufferSize), this.loopCancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                await Task.Factory.StartNew(() => this.ReceiveLoop(this.loopCancellationTokenSource.Token), this.loopCancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
         }
 
@@ -99,12 +97,21 @@ namespace bybit.net.api.Websockets
         /// <param name="cancellationToken">Token to signal the callback registration to cancel.</param>
         public void OnMessageReceived(Func<string, Task> onMessageReceived, CancellationToken cancellationToken)
         {
-            this.onMessageReceivedFunctions.Add(onMessageReceived);
+            lock (onMessageReceivedLock)
+            {
+                this.onMessageReceivedFunctions.Add(onMessageReceived);
+            }
 
             if (cancellationToken != CancellationToken.None)
             {
-                var reg = cancellationToken.Register(() =>
-                    this.onMessageReceivedFunctions.Remove(onMessageReceived));
+                var reg = cancellationToken.Register(
+                    () =>
+                    {
+                        lock (onMessageReceivedLock)
+                        {
+                            this.onMessageReceivedFunctions.Remove(onMessageReceived);
+                        }
+                    });
 
                 this.onMessageReceivedCancellationTokenRegistrations.Add(reg);
             }
@@ -161,7 +168,7 @@ namespace bybit.net.api.Websockets
         #region Private Methods
         /// <summary>
         /// CUSTOMISE PRIVATE CONNECTION ALIVE TIME. For private channel, you can customise alive duration by adding a param max_alive_time, the lowest value is 30s (30 seconds),
-        /// the highest value is 600s (10 minutes). You can also pass 1m, 2m etc when you try to configure by minute level. e.g., 
+        /// the highest value is 600s (10 minutes). You can also pass 1m, 2m etc. when you try to configure by minute level. e.g., 
         /// wss://stream-testnet.bybit.com/v5/private?max_alive_time=1m.
         /// </summary>
         /// <returns>websocket url</returns>
@@ -220,10 +227,10 @@ namespace bybit.net.api.Websockets
         private async Task SendAuth(string key, string secret)
         {
             long expires = DateTimeOffset.Now.ToUnixTimeMilliseconds() + 10000;
-            string _val = $"GET/realtime{expires}";
+            string val = $"GET/realtime{expires}";
 
             var hmacsha256 = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
-            var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(_val));
+            var hash = hmacsha256.ComputeHash(Encoding.UTF8.GetBytes(val));
             string signature = BitConverter.ToString(hash).Replace("-", "").ToLower();
 
             var authMessage = new { req_id = BybitParametersUtils.GenerateTransferId(), op = "auth", args = new object[] { key, expires, signature } };
@@ -240,8 +247,8 @@ namespace bybit.net.api.Websockets
         private async Task SendSubscription(string[] args)
         {
             BybitParametersUtils.EnsureNoDuplicates(args);
-            var subMessage = new { req_id = Guid.NewGuid().ToString(), op = "subscribe", args = args };
-            string subMessageJson = JsonConvert.SerializeObject(subMessage);
+            var subMessage = new { req_id = Guid.NewGuid().ToString(), op = "subscribe", args };
+            var subMessageJson = JsonConvert.SerializeObject(subMessage);
             if (debugMode)
             {
                 await Console.Out.WriteLineAsync($"send subscription {subMessageJson}");
@@ -272,12 +279,12 @@ namespace bybit.net.api.Websockets
                     }
                     catch (Exception e)
                     {
-                        onErrorFunctions.ForEach(of => of(new WebSocketException("WebSocket ping exception.")));
+                        onErrorFunctions.ToList().ForEach(of => of(e));
                     }
                 }
                 else
                 {
-                    onErrorFunctions.ForEach(of => of(new WebSocketException("WebSocket connection closed.")));
+                    onErrorFunctions.ToList().ForEach(of => of(new WebSocketException("WebSocket connection closed.")));
                 }
             }
         }
@@ -286,25 +293,30 @@ namespace bybit.net.api.Websockets
         /// Listens for incoming messages from the WebSocket and processes them.
         /// </summary>
         /// <param name="cancellationToken">Token to signal the asynchronous operation to cancel.</param>
-        /// <param name="receiveBufferSize">Size of the buffer used to receive messages.</param>
-        /// <returns>A task that represents the asynchronous receive operation.</returns>
-        private async Task ReceiveLoop(CancellationToken cancellationToken, int receiveBufferSize = 8192)
+        /// <returns>A task that represents the asynchronous receiving operation.</returns>
+        private async Task ReceiveLoop(CancellationToken cancellationToken)
         {
-            WebSocketReceiveResult receiveResult;
             try
             {
+                var buffer = new byte[receiveBufferSize];
+                var arraySegment = new ArraySegment<byte>(buffer);
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    var buffer = new ArraySegment<byte>(new byte[receiveBufferSize]);
-                    receiveResult = await this.handler.ReceiveAsync(buffer, cancellationToken);
+                    
+                    var receiveResult = await this.handler.ReceiveAsync(arraySegment, cancellationToken);
 
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         throw new WebSocketException("WebSocket connection closed.");
                     }
 
-                    string content = Encoding.UTF8.GetString(buffer.ToArray(), buffer.Offset, buffer.Count);
-                    this.onMessageReceivedFunctions.ForEach(omrf => omrf(content));
+                    string content = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
+                    lock (onMessageReceivedLock)
+                    {
+                        this.onMessageReceivedFunctions.ForEach(omrf => omrf(content));
+                    }
+
+                    await Task.Yield();
                 }
             }
             catch (OperationCanceledException)
@@ -313,7 +325,7 @@ namespace bybit.net.api.Websockets
             }
             catch (Exception ex)
             {
-                onErrorFunctions.ForEach(of => of(ex));
+                onErrorFunctions.ToList().ForEach(of => of(ex));
             }
         }
         #endregion
