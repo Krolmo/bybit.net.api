@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>annotations</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>bybit.net.api</Title>
     <Authors>VictorWu</Authors>
@@ -46,6 +47,7 @@ Dive into a plethora of functionalities:
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <LangVersion>12</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
