@@ -2,7 +2,7 @@
 
 namespace bybit.net.api.Models.Position.Response;
 
-public class PositionInfo
+public class PositionInfo : ICloneable
 {
     [JsonProperty("positionIdx")]
     public PositionIdxType? PositionIdx { get; set; }
@@ -93,4 +93,9 @@ public class PositionInfo
 
     [JsonProperty("updatedTime")]
     public long UpdatedTime { get; set; }
+
+    public object Clone()
+    {
+        return this.MemberwiseClone();
+    }
 }

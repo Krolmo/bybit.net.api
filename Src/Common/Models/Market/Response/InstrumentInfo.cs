@@ -2,7 +2,7 @@
 
 namespace bybit.net.api.Models.Market.Response;
 
-public class InstrumentInfo
+public class InstrumentInfo : ICloneable
 {
     [JsonProperty("symbol")]
     public string Symbol { get; set; } = null!;
@@ -51,4 +51,9 @@ public class InstrumentInfo
 
     [JsonProperty("copyTrading")]
     public CopyTradingType CopyTrading { get; set; }
+
+    public object Clone()
+    {
+        return this.MemberwiseClone();
+    }
 }
