@@ -61,7 +61,7 @@ namespace bybit.net.api.Websockets
                 string wssUrl = !string.IsNullOrEmpty(maxAliveTime) && RequiresAuthentication(url) ? GetWssUrl(maxAliveTime) : url;
                 await handler.ConnectAsync(new Uri(wssUrl), cancellationToken);
 
-                _ = Task.Run(() => Ping(this.loopCancellationTokenSource.Token), cancellationToken);
+                _ = Task.Run(() => Ping(this.loopCancellationTokenSource!.Token), cancellationToken);
 
                 if (RequiresAuthentication(url))
                 {
