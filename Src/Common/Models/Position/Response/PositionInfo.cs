@@ -16,7 +16,7 @@ public class PositionInfo : ICloneable
 
     [JsonProperty("symbol")]
     public string Symbol { get; init; } = null!;
-
+    
     [JsonProperty("side")]
     public SideType Side { get; init; }
 
