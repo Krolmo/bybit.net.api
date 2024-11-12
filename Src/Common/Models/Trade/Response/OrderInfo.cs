@@ -65,10 +65,10 @@ public class OrderInfo
     public TimeInForceType TimeInForce { get; set; }
 
     [JsonProperty("orderType")]
-    public OrderType? OrderType { get; set; }
+    public bybit.net.api.OrderType? OrderType { get; set; }
 
     [JsonProperty("stopOrderType")]
-    public StopOrderType? StopOrderType { get; set; }
+    public bybit.net.api.StopOrderType? StopOrderType { get; set; }
 
     [JsonProperty("orderIv")]
     public decimal? OrderIv { get; set; }

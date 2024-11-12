@@ -107,7 +107,7 @@ public class PositionInfo : ICloneable
     public long UpdatedTime { get; init; }
     
     [JsonProperty("tpslMode")]
-    public TpslMode? TpslMode { get; init; }
+    public TakeProfitStopLossMode? TpslMode { get; init; }
 
     public object Clone()
     {
