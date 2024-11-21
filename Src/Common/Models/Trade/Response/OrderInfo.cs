@@ -129,4 +129,22 @@ public class OrderInfo
 
     [JsonProperty("updatedTime")]
     public long UpdatedTime { get; set; }
+
+    public override string ToString()
+    {
+        return "OrderInfo [OrderId: " + OrderId + ", OrderLinkId: " + OrderLinkId + ", BlockTradeId: " + BlockTradeId +
+               ", Symbol: " + Symbol + ", Price: " + Price + ", Quantity: " + Quantity + ", Side: " + Side +
+               ", IsLeverage: " + IsLeverage + ", PositionIdx: " + PositionIdx + ", OrderStatus: " + OrderStatus +
+               ", CreateType: " + CreateType + ", CancelType: " + CancelType + ", RejectReason: " + RejectReason +
+               ", AveragePrice: " + AveragePrice + ", LeavesQuantity: " + LeavesQuantity + ", LeavesValue: " + LeavesValue +
+               ", CumulativeExecutedOrderQuantity: " + CumulativeExecutedOrderQuantity + ", CumulativeExecutedValue: " + CumulativeExecutedValue +
+               ", CumulativeExecutedFee: " + CumulativeExecutedFee + ", TimeInForce: " + TimeInForce + ", OrderType: " + OrderType +
+               ", StopOrderType: " + StopOrderType + ", OrderIv: " + OrderIv + ", TriggerPrice: " + TriggerPrice +
+               ", TakeProfit: " + TakeProfit + ", StopLoss: " + StopLoss + ", TpTriggerBy: " + TpTriggerBy +
+               ", SlTriggerBy: " + SlTriggerBy + ", TriggerDirection: " + TriggerDirection + ", TriggerBy: " + TriggerBy +
+               ", LastPriceOnCreated: " + LastPriceOnCreated + ", ReduceOnly: " + ReduceOnly + ", CloseOnTrigger: " + CloseOnTrigger +
+               ", SmpType: " + SmpType + ", SmpGroup: " + SmpGroup + ", SmpOrderId: " + SmpOrderId + ", TpslMode: " + TpslMode +
+               ", TakeProfitLimitPrice: " + TakeProfitLimitPrice + ", StopLossLimitPrice: " + StopLossLimitPrice +
+               ", PlaceType: " + PlaceType + ", CreatedTime: " + CreatedTime + ", UpdatedTime: " + UpdatedTime + "]";
+    }
 }

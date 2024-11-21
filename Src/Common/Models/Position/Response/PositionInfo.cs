@@ -1,5 +1,4 @@
-﻿using bybit.net.api.Models.Trade;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace bybit.net.api.Models.Position.Response;
 
@@ -18,7 +17,7 @@ public class PositionInfo : ICloneable
     public string Symbol { get; init; } = null!;
     
     [JsonProperty("side")]
-    public SideType Side { get; init; }
+    public SideType? Side { get; init; } // If position is closed, this field will be null
 
     [JsonProperty("size")]
     public decimal Size { get; init; }
@@ -108,6 +107,45 @@ public class PositionInfo : ICloneable
     
     [JsonProperty("tpslMode")]
     public TakeProfitStopLossMode? TpslMode { get; init; }
+
+    public override string ToString()
+    {
+        return "PositionInfo [" +
+               "PositionIdx=" + PositionIdx +
+               ", RiskId=" + RiskId +
+               ", RiskLimitValue=" + RiskLimitValue +
+               ", Symbol='" + Symbol + '\'' +
+               ", Side=" + Side +
+               ", Size=" + Size +
+               ", EntryPrice=" + EntryPrice +
+               ", PositionValue=" + PositionValue +
+               ", TradeMode=" + TradeMode +
+               ", PositionStatus=" + PositionStatus +
+               ", AutoAddMargin=" + AutoAddMargin +
+               ", AdlRankIndicator=" + AdlRankIndicator +
+               ", Leverage=" + Leverage +
+               ", PositionBalance=" + PositionBalance +
+               ", MarkPrice=" + MarkPrice +
+               ", LiqPrice=" + LiqPrice +
+               ", BustPrice=" + BustPrice +
+               ", PositionMm=" + PositionMm +
+               ", PositionIm=" + PositionIm +
+               ", TakeProfit=" + TakeProfit +
+               ", StopLoss=" + StopLoss +
+               ", TrailingStop=" + TrailingStop +
+               ", UnrealisedPnl=" + UnrealisedPnl +
+               ", CurrentRealisedPnl=" + CurrentRealisedPnl +
+               ", CumRealisedPnl=" + CumRealisedPnl +
+               ", Seq=" + Seq +
+               ", IsReduceOnly=" + IsReduceOnly +
+               ", MmrSysUpdateTime=" + MmrSysUpdateTime +
+               ", LeverageSysUpdatedTime=" + LeverageSysUpdatedTime +
+               ", MmrSysUpdatedTime=" + MmrSysUpdatedTime +
+               ", CreatedTime=" + CreatedTime +
+               ", UpdatedTime=" + UpdatedTime +
+               ", TpslMode=" + TpslMode +
+               " ]";
+    }
 
     public object Clone()
     {

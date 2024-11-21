@@ -5,7 +5,7 @@
         public const string HTTP_MAINNET_URL = "https://api.bybit.com";
         public const string HTTP_MAINNET_BACKUP_URL = "https://api.bytick.com";
         public const string HTTP_TESTNET_URL = "https://api-testnet.bybit.com";
-        public const string DEFAULT_REC_WINDOW = "5000";
+        public const string DEFAULT_REC_WINDOW = "10000";
         public const string DEFAULT_SIGN_TYPE = "2";
         // WebSocket public channel - Mainnet
         public const string SPOT_MAINNET = "wss://stream.bybit.com/v5/public/spot";
