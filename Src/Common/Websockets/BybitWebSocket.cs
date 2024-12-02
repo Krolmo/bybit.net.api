@@ -81,7 +81,10 @@ namespace bybit.net.api.Websockets
         /// <returns>A task that represents the asynchronous disconnect operation.</returns>
         public async Task DisconnectAsync(CancellationToken cancellationToken)
         {
-            this.loopCancellationTokenSource?.Cancel();
+            if (this.loopCancellationTokenSource != null)
+            {
+                await this.loopCancellationTokenSource.CancelAsync();
+            }
 
             if (this.handler.State == WebSocketState.Open)
             {
@@ -161,7 +164,11 @@ namespace bybit.net.api.Websockets
             
             this.onErrorCancellationTokenRegistrations.ForEach(ct => ct.Dispose());
 
-            if (loopCancellationTokenSource != null) this.loopCancellationTokenSource.Dispose();
+            if (loopCancellationTokenSource != null)
+            {
+                this.loopCancellationTokenSource.Dispose();
+                loopCancellationTokenSource = null;
+            }
         }
         #endregion
 
