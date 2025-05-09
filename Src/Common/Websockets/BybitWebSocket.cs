@@ -88,8 +88,19 @@ namespace bybit.net.api.Websockets
 
             if (this.handler.State == WebSocketState.Open)
             {
-                await this.handler.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, cancellationToken);
-                await this.handler.CloseAsync(WebSocketCloseStatus.NormalClosure, cancellationToken);
+                try
+                {
+                    await this.handler.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, cancellationToken);
+                }
+                catch
+                { }
+
+                try
+                {
+                    await this.handler.CloseAsync(WebSocketCloseStatus.NormalClosure, cancellationToken);
+                }
+                catch
+                { }
             }
         }
 
@@ -273,25 +284,32 @@ namespace bybit.net.api.Websockets
         {
             while (!token.IsCancellationRequested)
             {
-                await Task.Delay(TimeSpan.FromSeconds(this.pingInterval), token);
-                if (this.handler.State == WebSocketState.Open)
+                try
                 {
-                    try
+                    await Task.Delay(TimeSpan.FromSeconds(this.pingInterval), token);
+                    if (this.handler.State == WebSocketState.Open)
                     {
-                        await SendAsync("{\"op\":\"ping\"}", CancellationToken.None);
-                        if (debugMode)
+                        try
                         {
-                            await Console.Out.WriteLineAsync("ping sent");
+                            await SendAsync("{\"op\":\"ping\"}", CancellationToken.None);
+                            if (debugMode)
+                            {
+                                await Console.Out.WriteLineAsync("ping sent");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            onErrorFunctions.ToList().ForEach(of => of(e));
                         }
                     }
-                    catch (Exception e)
+                    else
                     {
-                        onErrorFunctions.ToList().ForEach(of => of(e));
+                        onErrorFunctions.ToList().ForEach(of => of(new WebSocketException("WebSocket connection closed.")));
                     }
                 }
-                else
+                catch (OperationCanceledException)
                 {
-                    onErrorFunctions.ToList().ForEach(of => of(new WebSocketException("WebSocket connection closed.")));
+                    return;
                 }
             }
         }
